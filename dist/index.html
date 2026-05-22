@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galaxy Survivor: Genesis</title>
+    <script type="module" crossorigin src="/assets/index-CIGG3QbP.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-D0hZ7n5i.css">
+  </head>
+  <body>
+    <div id="app">
+      <div id="game"></div>
+      <div id="hud" aria-live="polite">
+        <div class="hud-row top">
+          <div class="hud-pill">HP <span id="hp">100</span></div>
+          <div class="hud-pill">LV <span id="level">1</span></div>
+          <div class="hud-pill">XP <span id="xp">0/5</span></div>
+          <div class="hud-pill">Wave <span id="wave">1</span></div>
+          <div class="hud-pill">รอบ <span id="wave-status">01:00</span></div>
+          <div class="hud-pill">เวลา <span id="time">00:00</span></div>
+          <div class="hud-pill">กำจัด <span id="kills">0</span></div>
+          <div class="speed-controls" aria-label="Game speed">
+            <button class="speed-button active" data-speed="1" type="button">x1</button>
+            <button class="speed-button" data-speed="2" type="button">x2</button>
+          </div>
+          <button id="pause-button" class="hud-button" type="button">Status</button>
+        </div>
+
+        <div id="boss-bar" class="boss-bar hidden">
+          <div class="boss-title" id="boss-title">Wave Boss</div>
+          <div class="boss-track"><div id="boss-fill" class="boss-fill"></div></div>
+          <div class="boss-hp" id="boss-hp">0/0</div>
+        </div>
+
+        <div id="skill-bar" class="skill-bar hidden" aria-label="Skill levels">
+          <div id="skill-fireball-slot" class="skill-slot hidden" title="Fireball">
+            <div id="skill-fireball-icon" class="skill-icon fire">F</div>
+            <div class="skill-copy">
+              <strong>Fireball</strong>
+              <span id="skill-fireball-level">Lv 1</span>
+            </div>
+          </div>
+          <div id="skill-ring-slot" class="skill-slot hidden" title="Arcane Ring">
+            <div id="skill-ring-icon" class="skill-icon ring locked">R</div>
+            <div class="skill-copy">
+              <strong>Ring</strong>
+              <span id="skill-ring-level">Locked</span>
+            </div>
+          </div>
+          <div id="skill-lightning-slot" class="skill-slot hidden" title="Chain Lightning">
+            <div id="skill-lightning-icon" class="skill-icon lightning locked">L</div>
+            <div class="skill-copy">
+              <strong>Lightning</strong>
+              <span id="skill-lightning-level">Locked</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="pause-menu" class="pause-menu hidden">
+          <div class="status-panel">
+            <div class="status-header">
+              <h1>สถานะ</h1>
+              <button id="resume-button" class="panel-button" type="button">เล่นต่อ</button>
+            </div>
+            <div class="status-list">
+              <div><span>HP:</span><strong id="status-hp">100/100</strong></div>
+              <div><span>Level:</span><strong id="status-level">1</strong></div>
+              <div><span>XP:</span><strong id="status-xp">0/5</strong></div>
+              <div><span>Wave:</span><strong id="status-wave">1</strong></div>
+              <div><span>Wave Status:</span><strong id="status-wave-status">01:00</strong></div>
+              <div><span>Time:</span><strong id="status-time">00:00</strong></div>
+              <div><span>Damage:</span><strong id="status-damage">56</strong></div>
+              <div><span>Cooldown:</span><strong id="status-cooldown">440ms</strong></div>
+              <div><span>Projectile:</span><strong id="status-projectiles">1</strong></div>
+              <div><span>Ring:</span><strong id="status-ring">Locked</strong></div>
+              <div><span>Lightning:</span><strong id="status-lightning">Locked</strong></div>
+              <div><span>Move Speed:</span><strong id="status-speed">230</strong></div>
+              <div><span>Magnet:</span><strong id="status-magnet">84</strong></div>
+              <div><span>Kills:</span><strong id="status-kills">0</strong></div>
+            </div>
+            <div class="status-actions">
+              <button id="status-restart-button" class="panel-button danger" type="button">เริ่มใหม่</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="level-up" class="level-up hidden">
+          <div class="level-panel">
+            <h1>เลือกพลังใหม่</h1>
+            <div id="upgrade-options" class="upgrade-options"></div>
+          </div>
+        </div>
+
+        <div id="game-over" class="game-over hidden">
+          <div class="result-panel">
+            <h1>จบรอบ</h1>
+            <p id="result-text"></p>
+            <button id="restart-button">เริ่มใหม่</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
