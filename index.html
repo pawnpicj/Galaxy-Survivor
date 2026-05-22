@@ -54,6 +54,34 @@
           </div>
         </div>
 
+        <div id="build-version" class="build-version">v0.1.0</div>
+
+        <div id="start-menu" class="start-menu">
+          <div class="start-panel">
+            <p class="start-kicker">Galaxy Survivor</p>
+            <h1>Galaxy Survivor: Genesis</h1>
+            <p class="start-copy">เลือกสกิลแรก แล้วเอาตัวรอดจาก wave ศัตรูเพื่อปลดล็อก Ultimate</p>
+            <div class="starting-skills" aria-label="Starting skill">
+              <button class="starting-skill" data-starting-skill="fireballSkill" type="button">
+                <span class="starting-skill-icon fire">F</span>
+                <strong>Fireball</strong>
+                <small>ยิงลูกไฟทะลุศัตรู เหมาะกับดาเมจตรง</small>
+              </button>
+              <button class="starting-skill" data-starting-skill="arcaneRing" type="button">
+                <span class="starting-skill-icon ring">R</span>
+                <strong>Arcane Ring</strong>
+                <small>ลูกแก้วหมุนรอบตัว เหมาะกับการกันระยะใกล้</small>
+              </button>
+              <button class="starting-skill" data-starting-skill="chainLightning" type="button">
+                <span class="starting-skill-icon lightning">L</span>
+                <strong>Chain Lightning</strong>
+                <small>สายฟ้าชิ่งหลายเป้าหมาย เหมาะกับฝูงมอน</small>
+              </button>
+            </div>
+            <button id="start-button" class="primary-button" type="button" disabled>เลือกสกิลก่อน</button>
+          </div>
+        </div>
+
         <div id="pause-menu" class="pause-menu hidden">
           <div class="status-panel">
             <div class="status-header">
@@ -91,9 +119,9 @@
 
         <div id="game-over" class="game-over hidden">
           <div class="result-panel">
-            <h1>จบรอบ</h1>
+            <h1>Game Over</h1>
             <p id="result-text"></p>
-            <button id="restart-button">เริ่มใหม่</button>
+            <button id="restart-button" class="primary-button" type="button">Restart</button>
           </div>
         </div>
       </div>

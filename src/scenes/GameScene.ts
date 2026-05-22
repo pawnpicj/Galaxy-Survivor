@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { GameState, UpgradeOption, getUpgradePool } from "../systems/GameState";
+import { GameState, UpgradeId, UpgradeOption, getUpgradePool } from "../systems/GameState";
 
 type EnemyKind = "basic" | "runner" | "brute" | "bomber" | "ranged";
 
@@ -48,6 +48,11 @@ const BOSS_WAVES = new Set([5, 10, 15, 20, 25]);
 const BOSS_DASH_INTERVAL_MS = 4300;
 const BOSS_DASH_WINDUP_MS = 650;
 const BOSS_DASH_ACTIVE_MS = 620;
+const BUILD_VERSION = "v0.1.0";
+const FIREBALL_SFX_URL =
+  "https://pixabay.com/sound-effects/download/film-special-effects-fire-magic-5-378639.mp3?filename=film-special-effects-fire-magic-5-378639.mp3";
+const LIGHTNING_SFX_URL =
+  "https://pixabay.com/sound-effects/download/electric-impact-37128.mp3?filename=electric-impact-37128.mp3";
 
 export class GameScene extends Phaser.Scene {
   private state = new GameState();
@@ -75,6 +80,10 @@ export class GameScene extends Phaser.Scene {
   private waveEndedMagnetActive = false;
   private waveRewardOffered = false;
   private enemyVariantsUnlocked = false;
+  private isStarted = false;
+  private selectedStartingSkill?: UpgradeId;
+  private audioContext?: AudioContext;
+  private masterGain?: GainNode;
   private hud = {
     hp: document.getElementById("hp")!,
     level: document.getElementById("level")!,
@@ -116,6 +125,10 @@ export class GameScene extends Phaser.Scene {
     skillFireballIcon: document.getElementById("skill-fireball-icon")!,
     skillRingIcon: document.getElementById("skill-ring-icon")!,
     skillLightningIcon: document.getElementById("skill-lightning-icon")!,
+    buildVersion: document.getElementById("build-version")!,
+    startMenu: document.getElementById("start-menu")!,
+    startButton: document.getElementById("start-button") as HTMLButtonElement,
+    startingSkillButtons: Array.from(document.querySelectorAll<HTMLButtonElement>(".starting-skill")),
     levelUp: document.getElementById("level-up")!,
     upgradeOptions: document.getElementById("upgrade-options")!,
     gameOver: document.getElementById("game-over")!,
@@ -132,6 +145,8 @@ export class GameScene extends Phaser.Scene {
     this.load.image("arcaneRingAura", "/assets/skills/arcane-ring.png");
     this.load.image("arcaneRingOrb", "/assets/skills/arcane-ring.png");
     this.load.image("thunderDominionFx", "/assets/skills/thunder-dominion.png");
+    this.load.audio("sfxFireball", FIREBALL_SFX_URL);
+    this.load.audio("sfxLightning", LIGHTNING_SFX_URL);
     this.load.spritesheet("dragonBoss", "/assets/dragon/dragon-fly.png", {
       frameWidth: 192,
       frameHeight: 192
@@ -147,6 +162,11 @@ export class GameScene extends Phaser.Scene {
     this.createGroups();
     this.registerInput();
     this.registerCollisions();
+    this.hud.buildVersion.textContent = BUILD_VERSION;
+    this.hud.startButton.addEventListener("click", () => this.startGame());
+    this.hud.startingSkillButtons.forEach((button) => {
+      button.addEventListener("click", () => this.selectStartingSkill(button));
+    });
     this.hud.restartButton.addEventListener("click", () => window.location.reload());
     this.hud.statusRestartButton.addEventListener("click", () => window.location.reload());
     this.hud.pauseButton.addEventListener("click", () => this.openPauseMenu());
@@ -154,10 +174,12 @@ export class GameScene extends Phaser.Scene {
     this.hud.speedButtons.forEach((button) => {
       button.addEventListener("click", () => this.setSpeedMultiplier(Number(button.dataset.speed ?? 1)));
     });
+    this.physics.pause();
+    this.updateHud();
   }
 
   update(time: number, delta: number): void {
-    if (this.state.gameOver || this.state.pausedForUpgrade || this.isManualPaused) {
+    if (!this.isStarted || this.state.gameOver || this.state.pausedForUpgrade || this.isManualPaused) {
       this.player.setVelocity(0, 0);
       return;
     }
@@ -182,6 +204,110 @@ export class GameScene extends Phaser.Scene {
     if (this.state.stats.hp <= 0) {
       this.endGame();
     }
+  }
+
+  private startGame(): void {
+    if (!this.selectedStartingSkill) return;
+
+    this.isStarted = true;
+    this.hud.startMenu.classList.add("hidden");
+    this.initAudio();
+    this.state.applyUpgrade(this.selectedStartingSkill);
+    this.updateHud();
+    this.playSfx("start");
+    this.physics.resume();
+  }
+
+  private selectStartingSkill(button: HTMLButtonElement): void {
+    this.selectedStartingSkill = button.dataset.startingSkill as UpgradeId;
+    this.hud.startingSkillButtons.forEach((skillButton) => {
+      skillButton.classList.toggle("selected", skillButton === button);
+    });
+    this.hud.startButton.disabled = false;
+    this.hud.startButton.textContent = "Start";
+  }
+
+  private initAudio(): void {
+    if (this.audioContext) {
+      if (this.audioContext.state === "suspended") void this.audioContext.resume();
+      return;
+    }
+
+    const AudioContextClass =
+      window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    this.audioContext = new AudioContextClass();
+    this.masterGain = this.audioContext.createGain();
+    this.masterGain.gain.value = 0.13;
+    this.masterGain.connect(this.audioContext.destination);
+  }
+
+  private playSfx(kind: "start" | "fire" | "xp" | "levelUp" | "boss"): void {
+    if (kind === "fire" && this.cache.audio.exists("sfxFireball")) {
+      this.sound.play("sfxFireball", { volume: 0.22, rate: 1.08 });
+      return;
+    }
+
+    if (!this.audioContext || !this.masterGain) return;
+
+    if (kind === "start") {
+      this.playTone(440, 620, 0.11, "triangle", 0);
+      this.playTone(660, 880, 0.13, "triangle", 0.08);
+      return;
+    }
+    if (kind === "fire") {
+      this.playTone(180, 520, 0.075, "sawtooth", 0);
+      return;
+    }
+    if (kind === "xp") {
+      this.playTone(760, 1080, 0.055, "triangle", 0);
+      return;
+    }
+    if (kind === "levelUp") {
+      this.playTone(520, 680, 0.09, "triangle", 0);
+      this.playTone(680, 860, 0.09, "triangle", 0.08);
+      this.playTone(860, 1120, 0.13, "triangle", 0.16);
+      return;
+    }
+    if (kind === "boss") {
+      this.playTone(92, 68, 0.32, "sawtooth", 0);
+      this.playTone(180, 118, 0.28, "square", 0.08);
+    }
+  }
+
+  private playLightningSfx(): void {
+    if (this.cache.audio.exists("sfxLightning")) {
+      this.sound.play("sfxLightning", { volume: 0.2, rate: this.state.stats.thunderDominionUnlocked ? 0.92 : 1.08 });
+      return;
+    }
+
+    this.playTone(820, 160, 0.12, "sawtooth", 0);
+    this.playTone(1240, 220, 0.09, "square", 0.035);
+  }
+
+  private playTone(
+    startFrequency: number,
+    endFrequency: number,
+    duration: number,
+    type: OscillatorType,
+    delay: number
+  ): void {
+    if (!this.audioContext || !this.masterGain) return;
+
+    const now = this.audioContext.currentTime + delay;
+    const oscillator = this.audioContext.createOscillator();
+    const gain = this.audioContext.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(startFrequency, now);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, endFrequency), now + duration);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.9, now + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    oscillator.connect(gain);
+    gain.connect(this.masterGain);
+    oscillator.start(now);
+    oscillator.stop(now + duration + 0.02);
   }
 
   private createWorld(): void {
@@ -343,6 +469,7 @@ export class GameScene extends Phaser.Scene {
     if (!BOSS_WAVES.has(this.currentWave) || this.bossSpawnedThisWave) return;
 
     this.bossSpawnedThisWave = true;
+    this.playSfx("boss");
     const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
     const distance = Math.max(this.scale.width, this.scale.height) * 0.68;
     const boss = this.enemies.get() as EnemySprite;
@@ -563,6 +690,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private fireAtNearestEnemy(time: number): void {
+    if (this.state.stats.fireballLevel <= 0) return;
     if (time - this.lastShotAt < this.state.stats.fireCooldownMs) return;
 
     const activeEnemies = this.enemies.getChildren().filter((child) => child.active) as EnemySprite[];
@@ -575,6 +703,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.lastShotAt = time;
+    this.playSfx("fire");
     const stats = this.state.stats;
     const projectileCount = stats.projectileCount;
     const target = activeEnemies[0];
@@ -629,6 +758,7 @@ export class GameScene extends Phaser.Scene {
     if (activeEnemies.length === 0) return;
 
     this.lastLightningAt = time;
+    this.playLightningSfx();
     const maxChains = Math.max(1, Math.floor(stats.lightningChains + (stats.lightningLevel - 1) * 0.25));
 
     if (stats.thunderDominionUnlocked) {
@@ -985,7 +1115,10 @@ export class GameScene extends Phaser.Scene {
   private collectGem(gem: GemSprite): void {
     gem.disableBody(true, true);
     if (this.state.addXp(gem.value)) {
+      this.playSfx("levelUp");
       this.showUpgradeChoices();
+    } else {
+      this.playSfx("xp");
     }
     this.updateHud();
   }
@@ -1331,7 +1464,7 @@ export class GameScene extends Phaser.Scene {
 
   private updateSkillHud(): void {
     const stats = this.state.stats;
-    const showFireball = stats.fireballLevel > 1 || stats.meteorCoreUnlocked;
+    const showFireball = stats.fireballLevel > 0 || stats.meteorCoreUnlocked;
     const showRing = stats.arcaneRingLevel > 0 || stats.celestialHaloUnlocked;
     const showLightning = stats.lightningLevel > 0 || stats.thunderDominionUnlocked;
 

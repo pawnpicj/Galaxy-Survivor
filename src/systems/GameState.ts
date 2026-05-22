@@ -55,7 +55,7 @@ export class GameState {
     xp: 0,
     xpToNext: 5,
     damage: 56,
-    fireballLevel: 1,
+    fireballLevel: 0,
     fireCooldownMs: 440,
     projectileCount: 1,
     fireballHits: 2,

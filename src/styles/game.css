@@ -223,7 +223,8 @@ canvas {
 
 .level-up,
 .game-over,
-.pause-menu {
+.pause-menu,
+.start-menu {
   pointer-events: auto;
   position: fixed;
   inset: 0;
@@ -238,13 +239,111 @@ canvas {
 
 .level-panel,
 .result-panel,
-.status-panel {
+.status-panel,
+.start-panel {
   width: min(760px, calc(100vw - 32px));
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   background: rgba(18, 27, 40, 0.96);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46);
   padding: 22px;
+}
+
+.start-menu {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(146, 247, 255, 0.15), transparent 34%),
+    rgba(6, 10, 16, 0.76);
+}
+
+.start-panel {
+  width: min(560px, calc(100vw - 32px));
+  text-align: center;
+}
+
+.start-kicker {
+  margin: 0 0 8px;
+  color: #92f7ff;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.start-copy {
+  margin: 0 auto 20px;
+  max-width: 420px;
+  color: #d8e1ef;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.starting-skills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.starting-skill {
+  cursor: pointer;
+  min-height: 154px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(36, 50, 71, 0.86);
+  color: #fff7db;
+  font: inherit;
+  padding: 12px;
+  text-align: left;
+}
+
+.starting-skill:hover,
+.starting-skill.selected {
+  border-color: rgba(244, 211, 94, 0.76);
+  background: rgba(49, 69, 99, 0.96);
+}
+
+.starting-skill.selected {
+  box-shadow: 0 0 0 2px rgba(244, 211, 94, 0.24);
+}
+
+.starting-skill-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  color: #101722;
+  font-weight: 900;
+}
+
+.starting-skill-icon.fire {
+  background: #f4d35e;
+}
+
+.starting-skill-icon.ring {
+  background: #92f7ff;
+}
+
+.starting-skill-icon.lightning {
+  background: #d7f8ff;
+}
+
+.starting-skill strong,
+.starting-skill small {
+  display: block;
+}
+
+.starting-skill strong {
+  margin-bottom: 6px;
+  color: #f7f2df;
+  font-size: 15px;
+}
+
+.starting-skill small {
+  color: #d8e1ef;
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .status-panel {
@@ -325,7 +424,7 @@ h1 {
 }
 
 .upgrade-card,
-#restart-button {
+.primary-button {
   cursor: pointer;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
@@ -341,7 +440,7 @@ h1 {
 }
 
 .upgrade-card:hover,
-#restart-button:hover {
+.primary-button:hover {
   background: #314563;
 }
 
@@ -367,14 +466,48 @@ h1 {
   color: #d8e1ef;
 }
 
-#restart-button {
+.primary-button {
   padding: 10px 16px;
   text-align: center;
   font-weight: 800;
 }
 
+#start-button {
+  min-width: 156px;
+  background: #f4d35e;
+  color: #101722;
+  font-size: 16px;
+}
+
+#start-button:hover {
+  background: #ffe27a;
+}
+
+#start-button:disabled {
+  cursor: not-allowed;
+  background: #3c4656;
+  color: #aebbd0;
+}
+
+.build-version {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(12, 18, 28, 0.58);
+  color: #aebbd0;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 @media (max-width: 720px) {
   .upgrade-options {
+    grid-template-columns: 1fr;
+  }
+
+  .starting-skills {
     grid-template-columns: 1fr;
   }
 
